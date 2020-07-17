@@ -2,6 +2,12 @@
 #include "ui_mainwindow.h"
 #include "blockitem.h"
 
+#include <fstream>
+#include <iostream>
+
+
+using namespace std;
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
     scene = new QGraphicsScene(this);
@@ -143,8 +149,134 @@ void MainWindow::updateBlockChain(BlockItem *head) {
     head = head->next;
   }
 }
+void MainWindow::loadBlockChain() {
+
+    for(int i=0;i<blocks.size();i++)
+    {
+        if(i>0)
+            blocks[i]->prev = blocks[i-1];
+        if(i<blocks.size()-1)
+            blocks[i]->next = blocks[i+1];
+    }
+    updateBlockChain(blocks[0]);
+
+}
 
 void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
 {
     this->currentSelectedInstruction = arg1;
+}
+
+//void MainWindow::splitString(string str, vector<string> &list)
+//{
+//    int current = 0;
+//    int next;
+//    while(current<str.size())
+//    {
+//        next = str.find_first_of(" ",current);
+//        if(next != current)
+//        {
+//            string tmp = str.substr(current,next-current);
+//            if(tmp.size() != 0)
+//            {
+//                list.push_back(tmp);
+//            }
+//        }
+//        if(next == string::npos)
+//            break;
+//        current = next+1;
+//    }
+//}
+
+void MainWindow::on_Save_clicked()
+{
+
+//    fstream file, heap;
+//    string filename = "../ITRI_ROBOT-master/save/blocks.irb";
+//    string heatname = "../ITRI_ROBOT-master/save/heat.irb";
+//    file.open(filename,ios::out);
+//    heap.open(heatname,ios::out);
+//    for(int i=0;i<blocks.size();i++)
+//    {
+//        file<<blocks[i]->instruction.toStdString()<<" "<<blocks[i]->var1->text().toStdString()<<" "<<blocks[i]->var2->text().toStdString()<<"\n\n";
+//    }
+//    BlockItem *tmp = heatMap[0].first;
+//    while(tmp != nullptr)
+//    {
+//        heap<<tmp->instruction.toStdString()<<" "<<tmp->var1->text().toStdString()<<" "<<tmp->var2->text().toStdString()<<"\n\n";
+//        tmp = tmp->next;
+//    }
+//    cout<<"write file finish.\n";
+
+//    file.close();
+
+    QString fileName = QFileDialog::getSaveFileName(NULL, QObject::tr("Text file"),
+        qApp->applicationDirPath(), QObject::tr("Files (*.irb)"));
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Cannot open file for writing:" << qPrintable(file.errorString());
+        return;
+    }
+    else
+    {
+        qDebug() << "Open file for writing:" << qPrintable(file.errorString());
+    }
+
+    QTextStream out(&file);
+    BlockItem *tmp = heatMap[0].first;
+    while(tmp != nullptr)
+    {
+        out<<tmp->instruction<<" "<<tmp->var1->text()<<" "<<tmp->var2->text()<<"\n\n";
+        tmp = tmp->next;
+    }
+
+    file.close();
+
+}
+
+void MainWindow::on_Load_clicked()
+{
+    blocks.clear();
+    heatMap.clear();
+    scene->clear();
+
+    QString fileName = QFileDialog::getOpenFileName(NULL, QObject::tr("Text file"),
+        qApp->applicationDirPath(), QObject::tr("Files (*.irb)"));
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Cannot open file for reading:" << qPrintable(file.errorString());
+        return;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd())
+    {
+        QString fileLine = in.readLine();
+        QString instruction;
+
+        if(fileLine.size() == 0)
+            continue;
+
+        instruction = fileLine.split(" ").at(0);
+
+
+        BlockItem *b = new BlockItem(blocks.size(), instruction);
+      //  QRectF heat = QRectF(b->pos().x(), b->pos().y()+b->height-20, 100, 40);
+        QObject::connect(b, &BlockItem::on_block_mouse_release, this, &MainWindow::on_block_mouse_release);
+        QObject::connect(b, &BlockItem::on_block_mouse_press, this, &MainWindow::on_block_mouse_press);
+        QObject::connect(b, &BlockItem::on_block_mouse_move, this, &MainWindow::on_block_mouse_move);
+        blocks.push_back(b);
+        b->var1->setText(fileLine.split(" ").at(1));
+        b->var2->setText(fileLine.split(" ").at(2));
+        updateHeatMap(b);
+      //  heatMap.push_back(std::make_pair(b, heat));
+        scene->addItem(b);
+    }
+    loadBlockChain();
+    file.close();
+
+
 }

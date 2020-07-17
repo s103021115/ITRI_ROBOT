@@ -28,14 +28,20 @@ BlockItem::BlockItem(int id, QString instruction) {
   this->setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 
   QLabel *instructionLabel = new QLabel(this->instruction);
-  QLineEdit *pt1 = new QLineEdit;
-  pt1->setStyleSheet("border: 3px solid black;");
-  QLineEdit *pt2 = new QLineEdit;
-  pt2->setStyleSheet("border: 3px solid black;");
+  this->var1 = new QLineEdit;
+  this->var2 = new QLineEdit;
+  this->var1->setStyleSheet("border: 3px solid black;");
+  this->var2->setStyleSheet("border: 3px solid black;");
+//  QLineEdit *pt1 = new QLineEdit;
+//  pt1->setStyleSheet("border: 3px solid black;");
+//  QLineEdit *pt2 = new QLineEdit;
+//  pt2->setStyleSheet("border: 3px solid black;");
   QHBoxLayout *layout = new QHBoxLayout;
   layout->addWidget(instructionLabel);
-  layout->addWidget(pt1);
-  layout->addWidget(pt2);
+//  layout->addWidget(pt1);
+//  layout->addWidget(pt2);
+  layout->addWidget(this->var1);
+  layout->addWidget(this->var2);
   proxyWidget = new QGraphicsProxyWidget(this);
   auto widget = new QWidget();
   widget->setStyleSheet("background-color:transparent;");

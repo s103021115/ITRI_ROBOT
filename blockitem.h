@@ -19,6 +19,10 @@ class BlockItem : public QObject, public QGraphicsItem {
     int height;
     int width;
     QString instruction;
+
+    QString instruction_var;
+    QLineEdit *var1, *var2;
+
     BlockItem* next;
     BlockItem* prev;
     BlockItem(int, QString);
